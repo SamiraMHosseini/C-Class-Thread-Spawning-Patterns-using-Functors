@@ -77,10 +77,10 @@ public:
 	void SpawnD()
 	{
 		auto tToc = system_clock::now() + duration<int>(1);
-		/*
-		The following line results in an error because the function's parameter is a reference type,
-		and the argument being passed needs to be wrapped with the std::ref function to create a reference wrapper.
 
+		/*
+		The following line results in an error if the function's parameter is a reference type,
+		and the argument being passed needs to be wrapped with the std::ref function to create a reference wrapper.
 		*/
 		//this->thread_ = std::thread(&Launch::operator(), this, this->tToc); 
 
