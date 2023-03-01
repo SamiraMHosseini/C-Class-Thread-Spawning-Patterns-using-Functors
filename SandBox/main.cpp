@@ -16,10 +16,9 @@ public:
 	Launch(const Launch&) = default;
 	Launch& operator=(const Launch&) = default;
 
-	void operator() (system_clock::time_point& tToc)
+	void operator() (system_clock::time_point tToc)
 	{
 		START_BANNER;
-
 		auto time{ system_clock::now() };
 		int count = 0;
 		while (time <= tToc)
@@ -29,7 +28,7 @@ public:
 			time = system_clock::now();
 		}
 	}
-
+	
 	//Different ways to spawn a thread in a class
 	void SpawnA()
 	{
@@ -37,18 +36,18 @@ public:
 		/*
 		In C++, the this pointer refers to the address of the current object instance.
 		It's important to note that 'this' is a pointer, so its value will be the memory address of object.
-		In C++, the keyword 'this' also refers to a pointer to the current instance of an object. 
+		In C++, the keyword 'this' also refers to a pointer to the current instance of an object.
 		When used inside a class method, 'this' points to the memory address of the object on which the method is called.
 		*/
 		this->thread_ = std::thread(
-			
-			[this,&tToc]()->void
-			
+
+			[this, tToc]()->void
+
 			{
-			
-			(*this).operator()(tToc);
+
+				(*this).operator()(tToc);
 			}
-		
+
 		);
 	}
 	void SpawnB()
@@ -56,12 +55,12 @@ public:
 
 		auto tToc = system_clock::now() + duration<int>(1);
 		std::thread th(
-			[&tToc,this]()->void
+			[tToc, this]()->void
 
 			{
 
 				(*this).operator()(tToc);
-				
+
 			}
 
 		);
@@ -72,26 +71,26 @@ public:
 	void SpawnC()
 	{
 		auto tToc = system_clock::now() + duration<int>(1);
-		thread_ = std::thread([&tToc, this]() { (*this)(tToc); });
+		thread_ = std::thread([tToc, this]() { (*this)(tToc); });
 	}
 
 	void SpawnD()
 	{
 		auto tToc = system_clock::now() + duration<int>(1);
 		/*
-		This code results in an error because the function's parameter is a reference type,
+		The following line results in an error because the function's parameter is a reference type,
 		and the argument being passed needs to be wrapped with the std::ref function to create a reference wrapper.
-		
+
 		*/
 		//this->thread_ = std::thread(&Launch::operator(), this, this->tToc); 
 
-		this->thread_ = std::thread(&Launch::operator(), this, std::ref(tToc));
+		this->thread_ = std::thread(&Launch::operator(), this,tToc);
 	}
 
 	~Launch()
 	{
-		
-		
+
+
 		if (this->thread_.joinable())
 		{
 			this->thread_.join();
@@ -108,7 +107,7 @@ int main()
 {
 	START_BANNER_MAIN("Main");
 
-	
+
 	//the follwoing is causing an error
 	/*
 	Error: 'std::tuple<void (__thiscall Launch::* )(void),Launch>::tuple': no overloaded function takes 2 arguments.
@@ -118,12 +117,13 @@ int main()
 	//Launch launch("---A---");
 	//std::thread thLaunch(&Launch::operator(), launch);
 	//thLaunch.join();
-
 	
-    //Solution 1---------------------------------------------------
-	//Launch launch("---A---", tToc);
-	//std::thread thLaunch(&Launch::operator(), &launch);
-	//thLaunch.join();
+
+	//Solution 1---------------------------------------------------
+	/*auto tToc = system_clock::now() + duration<int>(1);
+	Launch launch("---A---");
+	std::thread thLaunch(&Launch::operator(), &launch, std::ref(tToc));
+	thLaunch.join();*/
 
 	//Solution 2---------------------------------------------------
 
