@@ -23,12 +23,12 @@ public:
 		int count = 0;
 		while (time <= tToc)
 		{
-			Debug::out("%d \n", count++);
+			Debug::out("--> %d \n", count++);
 			std::this_thread::sleep_for(100ms);
 			time = system_clock::now();
 		}
 	}
-	
+
 	//Different ways to spawn a thread in a class
 	void SpawnA()
 	{
@@ -39,42 +39,71 @@ public:
 		In C++, the keyword 'this' also refers to a pointer to the current instance of an object.
 		When used inside a class method, 'this' points to the memory address of the object on which the method is called.
 		*/
-		this->thread_ = std::thread(
+		if (this->thread_.joinable() == false)
+		{
+			this->thread_ = std::thread(
 
-			[this, tToc]()->void
+				[this, tToc]()->void
 
-			{
+				{
 
-				(*this).operator()(tToc);
-			}
+					(*this).operator()(tToc);
+				}
 
-		);
+			);
+		}
 	}
 	void SpawnB()
 	{
 
 		auto tToc = system_clock::now() + duration<int>(1);
-		std::thread th(
-			[tToc, this]()->void
+		if (this->thread_.joinable() == false)
+		{
+			std::thread th(
+				[tToc, this]()->void
 
-			{
+				{
 
-				(*this).operator()(tToc);
+					(*this).operator()(tToc);
 
-			}
+				}
 
-		);
+			);
 
-		this->thread_ = std::move(th);
+			this->thread_ = std::move(th);
+		}
+
 	}
 
 	void SpawnC()
 	{
+
 		auto tToc = system_clock::now() + duration<int>(1);
-		thread_ = std::thread([tToc, this]() { (*this)(tToc); });
+		if (this->thread_.joinable() == false)
+		{
+			thread_ = std::thread([tToc, this]() { (*this)(tToc); });
+		}
+	}
+	void SpawnD()
+	{
+
+		auto tToc = system_clock::now() + duration<int>(1);
+		if (this->thread_.joinable() == false)
+		{
+			/*
+			The important point is that passing the Launch object by reference avoids creating a copy of the object, 
+			which would result in a compilation error due to the non-copyable std::thread data member inside the Launch class.
+			
+			Passing *this directly to the std::thread constructor would cause the std::thread object 
+			to copy the th member variable of the TestMe class, which would result in a compile-time error 
+			because std::thread objects are not copyable.
+			*/
+
+			thread_ = std::thread(std::ref(*this), tToc);
+		}
 	}
 
-	void SpawnD()
+	void SpawnE()
 	{
 		auto tToc = system_clock::now() + duration<int>(1);
 
@@ -83,8 +112,10 @@ public:
 		and the argument being passed needs to be wrapped with the std::ref function to create a reference wrapper.
 		*/
 		//this->thread_ = std::thread(&Launch::operator(), this, this->tToc); 
-
-		this->thread_ = std::thread(&Launch::operator(), this,tToc);
+		if (this->thread_.joinable() == false)
+		{
+			this->thread_ = std::thread(&Launch::operator(), this, tToc);
+		}
 	}
 
 	~Launch()
@@ -93,9 +124,11 @@ public:
 
 		if (this->thread_.joinable())
 		{
+			Debug::out(" %d has joined\n", this->thread_.get_id());
 			this->thread_.join();
+
 		}
-		Debug::out("~Launch() \n");
+
 	}
 
 	std::thread thread_;
@@ -106,8 +139,9 @@ public:
 int main()
 {
 	START_BANNER_MAIN("Main");
-
-
+	
+	/*std::thread th(std::move(test),3);
+	th.join();*/
 	//the follwoing is causing an error
 	/*
 	Error: 'std::tuple<void (__thiscall Launch::* )(void),Launch>::tuple': no overloaded function takes 2 arguments.
@@ -117,7 +151,7 @@ int main()
 	//Launch launch("---A---");
 	//std::thread thLaunch(&Launch::operator(), launch);
 	//thLaunch.join();
-	
+
 
 	//Solution 1---------------------------------------------------
 	/*auto tToc = system_clock::now() + duration<int>(1);
@@ -138,6 +172,9 @@ int main()
 
 	Launch launchD("---D---");
 	launchD.SpawnD();
+
+	Launch launchE("---E---");
+	launchE.SpawnE();
 
 }
 
