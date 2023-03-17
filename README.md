@@ -1,5 +1,5 @@
-# C++ Concurrent Programming
-# C++ Example Code: Creating and Joining a Thread with Functor in a Class.
+# C++ Concurrent Programming 
+C++ Example Code: Creating and Joining a Thread with Functor in a Class.
 It is a very  useful  pattern because now what we're going to do is create the construction and the launch of a thread inside of its own class.
 
 This code demonstrates different ways to create and spawn threads in a C++ class. It defines a class Launch that inherits from BannerBase and shows various methods for starting a thread within the class.
@@ -25,3 +25,9 @@ SpawnE: Directly passes the Launch object's member function pointer and this to 
 The destructor of the Launch class checks if the thread_ is joinable and joins it if necessary.
 
 In the main function, five Launch objects are created with different names, and each object uses a different Spawn method to start the thread. This demonstrates the different ways to create threads in a class while managing object lifetimes and references correctly.
+
+# Using std::ref to Pass Object References to Threads in C++.
+
+In SpawnD, std::ref is used to create a reference wrapper around the Launch object, which allows passing the object by reference to the std::thread constructor. This is necessary because std::thread copies its arguments by default, and Launch objects contain a non-copyable member variable (std::thread thread_). By using std::ref, you can ensure that the Launch object is passed by reference and not copied.
+
+When std::ref(*this) is used, a reference wrapper is created around the Launch object, which allows the object to be passed by reference to the std::thread constructor. This way, the original object is used in the thread, avoiding any issues related to copying non-copyable objects like std::thread.
