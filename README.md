@@ -37,8 +37,11 @@ When std::ref(*this) is used, a reference wrapper is created around the Launch o
 This line uses the assignment operator to create a new std::thread object and assign it to the thread_ member variable of the class:
 thread_ = std::thread(std::ref(*this), tToc);
 Here, the assignment operator (=) assigns the newly created std::thread object to thread_. The std::thread constructor takes two arguments: std::ref(*this) and tToc. The std::ref function creates a reference wrapper for the *this object, allowing it to be passed to the thread without copying. tToc is the time point at which the thread should stop executing.
+
 std::thread objects are not copyable. However, they are movable. The assignment operator in this case performs a move assignment, not a copy assignment.
 
-When you create a new std::thread object, you are constructing a temporary object. The move assignment operator transfers the ownership of the thread's resources from the temporary object to the thread_ member variable. After the move assignment, the temporary object is left in a "valid but unspecified state", and the thread_ member variable holds the resources of the thread.
+When you create a new std::thread object, you are constructing a temporary object. 
+
+The move assignment operator transfers the ownership of the thread's resources from the temporary object to the thread_ member variable. After the move assignment, the temporary object is left in a "valid but unspecified state", and the thread_ member variable holds the resources of the thread.
 
 In C++11 and later, move semantics make it possible to efficiently transfer resources between objects, even if those objects are not copyable.
