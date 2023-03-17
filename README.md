@@ -1,3 +1,27 @@
 # C++ Concurrent Programming
 # C++ Example Code: Creating and Joining a Thread with Functor in a Class.
 It is a very  useful  pattern because now what we're going to do is create the construction and the launch of a thread inside of its own class.
+
+This code demonstrates different ways to create and spawn threads in a C++ class. It defines a class Launch that inherits from BannerBase and shows various methods for starting a thread within the class.
+
+# Key points:
+
+The Launch class has a constructor taking a const char* argument and a private std::thread member variable named thread_.
+
+The operator() function of the Launch class runs a loop that prints the count until a specified system_clock::time_point has been reached.
+
+The Launch class has five different methods for spawning a thread: SpawnA, SpawnB, SpawnC, SpawnD, and SpawnE. Each method demonstrates a different way to start a thread while avoiding issues with non-copyable objects and ensuring that the Launch object is passed correctly.
+
+SpawnA: Uses a lambda function that captures this and tToc and calls the operator() function.
+
+SpawnB: Similar to SpawnA, but with an intermediate std::thread object before moving it to the member variable thread_.
+
+SpawnC: Uses a lambda function with a shorter syntax.
+
+SpawnD: Uses std::ref to pass the Launch object by reference to the std::thread constructor.
+
+SpawnE: Directly passes the Launch object's member function pointer and this to the std::thread constructor.
+
+The destructor of the Launch class checks if the thread_ is joinable and joins it if necessary.
+
+In the main function, five Launch objects are created with different names, and each object uses a different Spawn method to start the thread. This demonstrates the different ways to create threads in a class while managing object lifetimes and references correctly.
